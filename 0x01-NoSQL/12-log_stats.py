@@ -13,8 +13,7 @@ def get_log_stats():
     # Connect to the MongoDB server
     client = MongoClient('mongodb://127.0.0.1:27017')
     # Select the 'logs' database and 'nginx' collection
-    db = client.logs
-    collection = db.nginx
+    collection = client.logs.nginx
 
     # Count the total number of logs
     total_logs = collection.count_documents({})
@@ -22,6 +21,7 @@ def get_log_stats():
 
     # Count the number of logs for each method
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    print("Methods:")
     for method in methods:
         count = collection.count_documents({"method": method})
         print(f"\tmethod {method}: {count}")
