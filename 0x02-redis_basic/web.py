@@ -17,7 +17,7 @@ def count_requests(method: Callable) -> Callable:
     Decorator for counting requests and caching the HTML content of a URL.
     """
     @wraps(method)
-    def wrapper(url: str) -> str:
+    def wrapper(url): # sourcery skip: use-named-expression
         """
         Wrapper for the decorator that handles counting requests and caching.
         """
