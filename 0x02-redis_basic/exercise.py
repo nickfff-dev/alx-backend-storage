@@ -15,12 +15,32 @@ def count_calls(method: Callable) -> Callable:
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
+        """ Increments the count for a method in Redis."""
         # Use the qualified name of the method as the key
         key = method.__qualname__
         # Increment the count for this key in Redis
         self._redis.incr(key)
         # Call the original method and return its result
         return method(self, *args, **kwargs)
+    return wrapper
+
+
+def call_history(method: Callable) -> Callable:
+    """
+    A decorator that stores the history of
+    inputs and outputs for a particular function.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """ Stores the input and output of a method in Redis."""
+        input_key = f"{method.__qualname__}:inputs"
+        output_key = f"{method.__qualname__}:outputs"
+        # Store the input arguments
+        self._redis.rpush(input_key, str(args))
+        # Execute the wrapped function and store its output
+        result = method(self, *args, **kwargs)
+        self._redis.rpush(output_key, str(result))
+        return result
     return wrapper
 
 
@@ -37,20 +57,14 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Stores the input data in Redis using a
         random key and returns the key.
         """
         key = str(uuid.uuid4())
-        if isinstance(data, str):
-            self._redis.set(key, data)
-        elif isinstance(data, bytes):
-            self._redis.set(key, data)
-        elif isinstance(data, int):
-            self._redis.set(key, str(data))
-        elif isinstance(data, float):
-            self._redis.set(key, str(data))
+        self._redis.set(key, data)
         return key
 
     def get(self, key: str, fn: Optional[Callable] = None) -> \
