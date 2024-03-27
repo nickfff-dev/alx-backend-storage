@@ -45,8 +45,6 @@ class Cache:
         it is used to convert the data back to the desired format.
         """
         data = self._redis.get(key)
-        if data is None:
-            return None
         if fn is not None:
             return fn(data)
 
@@ -55,11 +53,11 @@ class Cache:
         Retrieves the data associated with the given
         key from Redis and converts it to a string.
         """
-        return self.get(key, fn=lambda d: d.decode("utf-8"))
+        return self._redis.get(key, fn=lambda d: d.decode("utf-8"))
 
     def get_int(self, key: str) -> int:
         """
         Retrieves the data associated with the given
         key from Redis and converts it to an integer.
         """
-        return self.get(key, fn=int)
+        return self._redis.get(key, fn=int)
