@@ -35,7 +35,7 @@ def call_history(method: Callable) -> Callable:
     """
 
     @wraps(method)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(self, *args, **kwargs):   # sourcery skip: avoid-builtin-shadow
         """ Stores the input and output of a method in Redis."""
         input_key = f"{method.__qualname__}:inputs"
         output_key = f"{method.__qualname__}:outputs"
@@ -106,6 +106,7 @@ class Cache:
 
 
 def replay(method: Callable) -> None:
+    # sourcery skip: use-fstring-for-concatenation, use-fstring-for-formatting
     """
     Displays the history of calls of a particular function.
     """
