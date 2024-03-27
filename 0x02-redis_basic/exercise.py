@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
-"""
-This module provides a Cache class for
-storing data in Redis.
-"""
+
 import redis
 import uuid
 from typing import Union, Callable, Optional
 from functools import wraps
+
+"""
+This module provides a Cache class for
+storing data in Redis.
+"""
 
 
 def count_calls(method: Callable) -> Callable:
     """
     A decorator that counts how many times a method is called.
     """
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """ Increments the count for a method in Redis."""
@@ -30,6 +33,7 @@ def call_history(method: Callable) -> Callable:
     A decorator that stores the history of
     inputs and outputs for a particular function.
     """
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """ Stores the input and output of a method in Redis."""
