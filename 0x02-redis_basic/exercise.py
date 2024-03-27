@@ -5,7 +5,7 @@ storing data in Redis.
 """
 import redis
 import uuid
-from typing import Union, Callable
+from typing import Union, Callable, Optional
 
 
 class Cache:
@@ -36,7 +36,7 @@ class Cache:
             self._redis.set(key, str(data))
         return key
 
-    def get(self, key: str, fn: Callable = None) -> \
+    def get(self, key: str, fn: Optional[Callable] = None) -> \
             Union[str, bytes, int, float]:
         """
         Retrieves the data associated with
@@ -45,19 +45,26 @@ class Cache:
         it is used to convert the data back to the desired format.
         """
         data = self._redis.get(key)
-        if fn is not None:
+        if fn:
             return fn(data)
+        return data
 
     def get_str(self, key: str) -> str:
         """
         Retrieves the data associated with the given
         key from Redis and converts it to a string.
         """
-        return self._redis.get(key, fn=lambda d: d.decode("utf-8"))
+        my_str = self._redis.get(key)
+        return my_str.decode("utf-8")
 
     def get_int(self, key: str) -> int:
         """
         Retrieves the data associated with the given
         key from Redis and converts it to an integer.
         """
-        return self._redis.get(key, fn=int)
+        answer = self._redis.get(key)
+        try:
+            answer = int(answer.decode("utf-8"))
+        except Exception:
+            answer = 0
+        return answer
