@@ -9,31 +9,29 @@ import redis
 import requests
 from typing import Callable
 
-redis_ = redis.Redis()
-
 
 def count_requests(method: Callable) -> Callable:
     """
     Decorator for counting requests and caching the HTML content of a URL.
     """
     @wraps(method)
-    def wrapper(url):  # sourcery skip: use-named-expression
+    def wrapper(url: str) -> str:
         """
         Wrapper for the decorator that handles counting requests and caching.
         """
+
+        redis_ = redis.Redis()
         # Increment the count for this URL
         redis_.incr(f"count:{url}")
         # Check if the content is already cached
-        cached_html = redis_.get(f"cached:{url}")
+        cached_html = redis_.get(f"{url}")
         if cached_html:
             # If cached, return the cached content
             return cached_html.decode('utf-8')
-        else:
-            # If not cached, fetch the content, cache it, and return it
-            html = method(url)
-            redis_.setex(f"cached:{url}", 10, html)
-            return html
-
+        result = method(url)
+        # Cache the result
+        redis_.set(f"{url}", result, 10)
+        return result
     return wrapper
 
 
